@@ -1,3 +1,16 @@
 {
-  "description": ""
+  "description": "Series on Backend with Javascript",
+  "dependencies": {
+    
+  },
+  "name": "chai-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {"nodemon": "^3.0.1"},
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/index.js"
+  },
+  "author": "",
+  "license": "ISC"
 }
