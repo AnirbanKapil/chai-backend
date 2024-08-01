@@ -10,7 +10,7 @@
   },
   
   "scripts": {
-    "dev": "-r dotenv/config --experimental-json-modules src/main.js"
+    "dev": "nodemon  dotenv/config --experimental-json-modules src/main.js"
   },
   "author": "",
   "license": "ISC",
