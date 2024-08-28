@@ -20,6 +20,7 @@ const generateAccessAndRefreshTokens = async (userId)=>{
     }
 }
 
+
 const registerUser = asyncHandler(async (req,res) => {
     const {username,email,fullname,password} = req.body
     
@@ -85,6 +86,7 @@ const registerUser = asyncHandler(async (req,res) => {
     
 })
 
+
 const loginUser = asyncHandler(async (req,res)=>{
     const {email,username,password} = req.body;
      
@@ -123,12 +125,41 @@ const loginUser = asyncHandler(async (req,res)=>{
         200,{
             user : loggedInUser,accessToken,refreshToken
         },
-        "User logged successfully"
+        "User logged in successfully"
        ) 
     )
 
 })
 
+
+const logoutUser = asyncHandler(async (req,res) => {
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set : {
+                refreshToken : undefined
+            }
+        },    
+        {
+            new : true
+        }
+        
+    ) 
+    
+    const options = {
+        httpOnly : true,
+        secure : true
+  }
+    
+    return res
+    .status(200)
+    .clearCookie("accessToken",options)
+    .clearCookie("refreshToken",options)
+    .json(new ApiResponse(200,{},"User logged Out"))
+})
+
+
 export {registerUser,
-        loginUser   
+        loginUser, 
+        logoutUser  
 };
