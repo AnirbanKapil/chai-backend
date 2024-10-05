@@ -182,7 +182,7 @@ const refreshAccessToken = asyncHandler(async (req,res)=>{
             throw new ApiError(401,"Refresh token expired or used")
         }
        
-        const {accessToken,newRefreshToken} = await generateAccessAndRefreshTokens(user._id)
+        const {accessToken,refreshToken : newRefreshToken} = await generateAccessAndRefreshTokens(user._id)
         const options ={
             httpOnly : true,
             secure : true
@@ -194,7 +194,7 @@ const refreshAccessToken = asyncHandler(async (req,res)=>{
         .json(
             new ApiResponse(
                 200,
-                {accessToken , refreshToken:newRefreshToken},
+                {accessToken , newRefreshToken},
                 "Access token refreshed"
             )
         ) 
