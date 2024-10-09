@@ -240,13 +240,15 @@ const updateAccountDetails = asyncHandler(async (req,res) => {
     if(!(fullName || email)){
         throw new ApiError(401,"All fields are required")
     }
-
-    const user = await User.findByIdAndUpdate(req.user?._id,{
+    
+    const user = await User.findByIdAndUpdate(req.user?._id,
+        {
         $set : {
-            fullName : fullName,
+            fullname : fullName,
             email : email
         }
-    },{new : true}
+       },
+       {new : true}
     ).select("-password")
 
     return res.status(200)
