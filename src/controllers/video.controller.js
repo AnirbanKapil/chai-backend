@@ -77,4 +77,37 @@ const getVideoById = asyncHandler(async (req,res) => {
 })
 
 
-export {publishAVideo,getVideoById}
+const updateVideo = asyncHandler(async (req, res) => {
+    const { videoId } = req.params
+    try {
+        if(!videoId){
+            throw new ApiError(400,"VideoId required")
+        }
+        
+        const thumbnailLocalPath = req.files?.thumbnail[0]?.path
+        if(!thumbnailLocalPath){
+            throw new ApiError(400, "thumbnail files required")
+        }
+    
+        
+        const newThumbnail = await uploadOnCloudinary(thumbnailLocalPath)
+        
+        const updatedThumbnail = await Video.findByIdAndUpdate(videoId,{
+            $set : {
+                thumbnail : newThumbnail,
+            }
+        },
+        {
+            new : true
+        })
+        
+        return res.status(200)
+                  .json(new ApiResponse(200,{},"Thumbnail updated")) 
+    
+    } catch (error) {
+        throw new ApiError(500,error?.message || "error while updating")    
+    }
+})
+
+
+export {publishAVideo,getVideoById,updateVideo}
