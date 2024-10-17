@@ -137,7 +137,16 @@ const deleteVideo = asyncHandler(async (req, res) => {
 
         
     
-        await Video.findByIdAndDelete(videoId)
+        const deletedVideo = await Video.findOneAndDelete(
+            {
+                _id : videoId,
+                owner : req.user?._id
+            }
+        )
+
+        if(!deleteVideo){
+            throw new ApiError(403,"Only owner can delete the video")
+        }
         
         return res.status(200)
                   .json(200,{},"video deleted successfully") 
