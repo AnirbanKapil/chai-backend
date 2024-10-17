@@ -5,6 +5,7 @@ import {User} from "../models/user.model.js"
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { Video } from "../models/video.model.js";
+import { isValidObjectId } from "mongoose";
 
 
 const publishAVideo = asyncHandler(async(req,res) => {
@@ -83,8 +84,13 @@ const updateVideo = asyncHandler(async (req, res) => {
         if(!videoId){
             throw new ApiError(400,"VideoId required")
         }
+        if (!isValidObjectId(videoId)) {
+            throw new ApiError(400, "Invalid Video Id");
+          }
         
-        const thumbnailLocalPath = req.files?.thumbnail[0]?.path
+        
+          
+        const thumbnailLocalPath = req.file?.path
         if(!thumbnailLocalPath){
             throw new ApiError(400, "thumbnail files required")
         }
@@ -92,9 +98,9 @@ const updateVideo = asyncHandler(async (req, res) => {
         
         const newThumbnail = await uploadOnCloudinary(thumbnailLocalPath)
         
-        const updatedThumbnail = await Video.findByIdAndUpdate(videoId,{
+        await Video.findByIdAndUpdate(videoId,{
             $set : {
-                thumbnail : newThumbnail,
+                thumbnail : newThumbnail.url,
             }
         },
         {
