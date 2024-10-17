@@ -66,6 +66,9 @@ const getVideoById = asyncHandler(async (req,res) => {
     if(!videoId){
         throw new ApiError(400,"VideoId required")
     }
+    if (!isValidObjectId(videoId)) {
+        throw new ApiError(400, "Invalid Video Id");
+      }
 
     const video = await Video.findById(videoId)
     
