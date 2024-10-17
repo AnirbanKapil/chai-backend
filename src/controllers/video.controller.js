@@ -144,7 +144,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
             }
         )
 
-        if(!deleteVideo){
+        if(!deletedVideo){
             throw new ApiError(403,"Only owner can delete the video")
         }
         
