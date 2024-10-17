@@ -91,8 +91,11 @@ const updateVideo = asyncHandler(async (req, res) => {
             throw new ApiError(400, "Invalid Video Id");
           }
         
-        
-          
+        const {title,description} = req.body
+        if(!(title && description)){
+            throw new ApiError(400,"title and description fields are empty")
+        } 
+
         const thumbnailLocalPath = req.file?.path
         if(!thumbnailLocalPath){
             throw new ApiError(400, "thumbnail files required")
@@ -101,9 +104,11 @@ const updateVideo = asyncHandler(async (req, res) => {
         
         const newThumbnail = await uploadOnCloudinary(thumbnailLocalPath)
         
-        await Video.findByIdAndUpdate(videoId,{
+        const updatedVideo = await Video.findByIdAndUpdate(videoId,{
             $set : {
                 thumbnail : newThumbnail.url,
+                title : title,
+                description : description 
             }
         },
         {
@@ -111,12 +116,15 @@ const updateVideo = asyncHandler(async (req, res) => {
         })
         
         return res.status(200)
-                  .json(new ApiResponse(200,{},"Thumbnail updated")) 
+                  .json(new ApiResponse(200,{updatedVideo},"Thumbnail updated")) 
     
     } catch (error) {
         throw new ApiError(500,error?.message || "error while updating")    
     }
 })
+
+
+
 
 
 export {publishAVideo,getVideoById,updateVideo}
