@@ -124,7 +124,30 @@ const updateVideo = asyncHandler(async (req, res) => {
 })
 
 
+const deleteVideo = asyncHandler(async (req, res) => {
+    const { videoId } = req.params
+    try {
+        if(!videoId){
+            throw new ApiError(400,"videoId required")
+        } 
+        
+        if(!isValidObjectId(videoId)){
+            throw new ApiError(400,"Invalid videoId")
+        }
+
+        
+    
+        await Video.findByIdAndDelete(videoId)
+        
+        return res.status(200)
+                  .json(200,{},"video deleted successfully") 
+    } catch (error) {
+        throw new ApiError(400,error?.message || "error while deleting")
+    } 
+})
 
 
 
-export {publishAVideo,getVideoById,updateVideo}
+
+
+export {publishAVideo,getVideoById,updateVideo,deleteVideo}
