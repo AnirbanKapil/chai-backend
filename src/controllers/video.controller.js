@@ -8,6 +8,7 @@ import { Video } from "../models/video.model.js";
 import { isValidObjectId } from "mongoose";
 
 
+
 const publishAVideo = asyncHandler(async(req,res) => {
     const {title,description} = req.body
     
@@ -134,22 +135,23 @@ const deleteVideo = asyncHandler(async (req, res) => {
         if(!isValidObjectId(videoId)){
             throw new ApiError(400,"Invalid videoId")
         }
-
         
-    
-        const deletedVideo = await Video.findOneAndDelete(
-            {
-                _id : videoId,
-                owner : req.user?._id
-            }
-        )
+        const video = await Video.findById(videoId)
+        
+
+        if(video.owner.toString() !== req.user?._id.toString()){
+            throw new ApiError(403,"Only the owner can delete this video")
+        }
+        
+        
+        const deletedVideo = await Video.findByIdAndDelete(videoId)
 
         if(!deletedVideo){
             throw new ApiError(403,"Only owner can delete the video")
         }
         
         return res.status(200)
-                  .json(200,{},"video deleted successfully") 
+                  .json(new ApiResponse (200,{},"video deleted successfully")) 
     } catch (error) {
         throw new ApiError(400,error?.message || "error while deleting")
     } 
