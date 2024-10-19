@@ -12,7 +12,8 @@ const createTweet = asyncHandler(async (req,res) => {
     }
 
     const tweet = await Tweet.create({
-        content
+        content,
+        owner : req.user?._id
     })
 
     return res.status(200)
