@@ -138,7 +138,6 @@ const deleteVideo = asyncHandler(async (req, res) => {
         
         const video = await Video.findById(videoId)
         
-
         if(video.owner.toString() !== req.user?._id.toString()){
             throw new ApiError(403,"Only the owner can delete this video")
         }
@@ -158,7 +157,38 @@ const deleteVideo = asyncHandler(async (req, res) => {
 })
 
 
+const togglePublishStatus = asyncHandler(async (req, res) => {
+    const { videoId } = req.params
+    if(!videoId){
+        throw new ApiError(400,"videoId required")
+    } 
+    if(!isValidObjectId(videoId)){
+        throw new ApiError(400,"Invalid videoId")
+    }
+
+    const video = await Video.findById(videoId)
+    if(video.owner.toString() !== req.user?._id.toString()){
+        throw new ApiError(403,"Only owner can use this feature")
+    }
+
+    const toggle = await Video.findByIdAndUpdate(videoId,
+        {
+           $set : {
+            isPublished : !video.isPublished
+           }
+        },
+        {new : true})
+    
+    if(!toggle){
+        throw new ApiError(501,"Failed to toggle")
+    }    
+
+    return res.status(200)
+              .json(new ApiResponse(200,{toggle},"Published status toggled successfully"))      
+})
 
 
 
-export {publishAVideo,getVideoById,updateVideo,deleteVideo}
+
+
+export {publishAVideo,getVideoById,updateVideo,deleteVideo,togglePublishStatus}
