@@ -92,6 +92,12 @@ const updateVideo = asyncHandler(async (req, res) => {
             throw new ApiError(400, "Invalid Video Id");
           }
         
+        const video = await Video.findById(videoId)
+        
+        if(video.owner.toString() !== req.user?._id.toString()){
+            throw new ApiError(403,"Only the owner can update this video")
+          }
+
         const {title,description} = req.body
         if(!(title && description)){
             throw new ApiError(400,"title and description fields are empty")
@@ -146,7 +152,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
         const deletedVideo = await Video.findByIdAndDelete(videoId)
 
         if(!deletedVideo){
-            throw new ApiError(403,"Only owner can delete the video")
+            throw new ApiError(403,"Error while deleting the video")
         }
         
         return res.status(200)
