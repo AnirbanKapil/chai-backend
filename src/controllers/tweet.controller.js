@@ -49,6 +49,46 @@ const getUserTweets = asyncHandler(async (req, res) => {
 })
 
 
+const updateTweet = asyncHandler(async (req, res) => {
+    const {tweetId} = req.params
+
+    try {
+        if(!tweetId){
+            throw new ApiError(400,"videoId not found")
+        }
+    
+        if(!isValidObjectId(tweetId)){
+            throw new ApiError(401,"Invalid videoId")
+        }
+    
+        const userTweet = await Tweet.findById(tweetId)
+        if(!userTweet){
+            throw new ApiError(404,"Invalid Id")
+        }
+    
+        if(userTweet.owner.toString() !== req.user?._id.toString()){
+            throw new ApiError(403,"Only owner can update tweets")
+        }
+    
+        const {content} = req.body
+        if(!content){
+            throw new ApiError(401,"Tweet field cannot be empty")
+        }
+        
+        const tweet = await Tweet.findByIdAndUpdate(tweetId,{
+            $set : {
+                content
+            }
+        },
+        {new : true})
+    
+        return res.status(200)
+                  . json(new ApiResponse(200,{tweet},"Tweet updated successfully"))
+    
+    } catch (error) {
+        throw new ApiError(400,`${error?.message || "error while updating"}`)
+    }
+})
 
 
 
@@ -56,4 +96,5 @@ const getUserTweets = asyncHandler(async (req, res) => {
 
 
 
-export {createTweet,getUserTweets}
+
+export {createTweet,getUserTweets,updateTweet}
