@@ -8,8 +8,8 @@ const router = Router();
 router.use(verifyJWT);
 
 router.route("/:videoId").get(getVideoComments);
-router.route("/:videoId").post(verifyJWT,addComment)
+router.route("/:videoId").post(addComment)
 
-router.route("/c/:commentId").patch(verifyJWT,updateComment)
+router.route("/c/:commentId").patch(updateComment)
 router.route("/c/:commentId").delete(deleteComment)
 export default router;
