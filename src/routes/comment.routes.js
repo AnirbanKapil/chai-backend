@@ -1,5 +1,5 @@
 import {Router} from "express"
-import {addComment, getVideoComments, updateComment} from "../controllers/comment.controller.js"
+import {addComment, getVideoComments, updateComment,deleteComment} from "../controllers/comment.controller.js"
 import {verifyJWT} from "../middlewares/auth.middleware.js"
 
 
@@ -11,4 +11,5 @@ router.route("/:videoId").get(getVideoComments);
 router.route("/:videoId").post(verifyJWT,addComment)
 
 router.route("/c/:commentId").patch(verifyJWT,updateComment)
+router.route("/c/:commentId").delete(deleteComment)
 export default router;

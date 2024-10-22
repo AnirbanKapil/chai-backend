@@ -72,7 +72,7 @@ const updateComment = asyncHandler(async (req, res) => {
     },
     {new : true})
 
-    if(!updateComment){
+    if(!updatedComment){
         throw new ApiError(400,"Error while updating")
     }
 
@@ -81,5 +81,31 @@ const updateComment = asyncHandler(async (req, res) => {
 })
 
 
+const deleteComment = asyncHandler(async (req, res) => {
+    const {commentId} = req.params
+    if(!commentId){
+        throw new ApiError(400,"CommentId not found")
+    }
+    
+    if(!isValidObjectId(commentId)){
+        throw new ApiError(400,"Invalid commentId")
+    }
+    
+    const commentOwner = await Comment.findById(commentId)
+    if(commentOwner.owner.toString() !== req.user?._id.toString()){
+        throw new ApiError(403,"Only owner can update the comment")
+    }
+    
+    const deletedComment = await Comment.findByIdAndDelete(commentId)
 
-export {getVideoComments,addComment,updateComment}
+    if(!deletedComment){
+        throw new ApiError(404,"CommenId not found")
+    }
+
+    return res.status(200)
+              .json(new ApiResponse(200,{},"Comment deleted successfully"))
+})
+
+
+
+export {getVideoComments,addComment,updateComment,deleteComment}
