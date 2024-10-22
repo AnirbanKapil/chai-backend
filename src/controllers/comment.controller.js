@@ -11,7 +11,22 @@ const getVideoComments = asyncHandler(async (req,res) => {
     if(!videoId){
         throw new ApiError(400,"videoId required")
     }
-    console.log(videoId)
+    if(!isValidObjectId(videoId)){
+        throw new ApiError(400,"Invalid videoId")
+    }
+
+    const comments = await Comment.find(
+        {
+            video : videoId
+        }
+    )
+
+    if(!comments){
+        throw new ApiError(400,"videoId not found")
+    }
+    
+    return res.status(200)
+              .json(new ApiResponse(200,{comments},"comments fetched successfully"))
 })
 
 
