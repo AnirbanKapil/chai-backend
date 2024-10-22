@@ -45,8 +45,41 @@ const addComment = asyncHandler(async (req, res) => {
               .json(new ApiResponse(200,{comment},"Comment posted successfully"))   
 })
 
+const updateComment = asyncHandler(async (req, res) => {
+    const {commentId} = req.params
+    if(!commentId){
+        throw new ApiError(400,"CommentId not found")
+    }
+    
+    if(!isValidObjectId(commentId)){
+        throw new ApiError(400,"Invalid commentId")
+    }
+    
+    const commentOwner = await Comment.findById(commentId)
+    if(commentOwner.owner.toString() !== req.user?._id.toString()){
+        throw new ApiError(403,"Only owner can update the comment")
+    }
+    
+    const {content} = req.body
+    if(!content){
+        throw new ApiError(400,"Content field is empty")
+    }
+
+    const updatedComment = await Comment.findByIdAndUpdate(commentId,{
+        $set : {
+            content 
+        }
+    },
+    {new : true})
+
+    if(!updateComment){
+        throw new ApiError(400,"Error while updating")
+    }
+
+    return res.status(200)
+              .json(new ApiResponse(200,{updatedComment},"Comment updated successfully"))
+})
 
 
 
-
-export {getVideoComments,addComment}
+export {getVideoComments,addComment,updateComment}
