@@ -16,12 +16,12 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
          throw new ApiError(400,"Invalid videoId")
      }
 
-    const alreadyLiked = await Like.findOne(
+    const likedVideo = await Like.findOne(
         {video : videoId , likedBy : req.user?._id}
     )
      
-     if(alreadyLiked){
-         await Like.findByIdAndDelete(alreadyLiked?._id)
+     if(likedVideo){
+         await Like.findByIdAndDelete(likedVideo?._id)
      }else{
          await Like.create({
              video : videoId,
@@ -30,7 +30,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
      }
  
      return res.status(200)
-               .json(new ApiResponse(200,{alreadyLiked : !!alreadyLiked},"toggle successful"))
+               .json(new ApiResponse(200,{likedVideo : !!likedVideo},"toggle successful"))
    } catch (error) {
        throw new ApiError(400,error?.message || "error in toggle") 
    }
