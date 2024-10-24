@@ -38,10 +38,34 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
 })
 
 
+const toggleCommentLike = asyncHandler(async (req, res) => {
+    const {commentId} = req.params
+    if(!commentId){
+        throw new ApiError(400,"CommentId not found")
+    }
+
+    if(!isValidObjectId(commentId)){
+        throw new ApiError(400,"CommentId invalid")
+    }
+
+    const likedComment = await Like.findOne(
+        {comment : commentId , likedBy : req.user?._id}
+    )
+    
+    if(likedComment){
+        await Like.findByIdAndDelete(likedComment?._id)
+    }else{
+        await Like.create({
+          comment : commentId,
+          likedBy : req.user?._id
+        })
+    }
+    return res.status(200)
+              .json(new ApiResponse(200,{likedComment : !!likedComment},"toggle successful"))
+})
 
 
 
 
 
-
-export {toggleVideoLike}
+export {toggleVideoLike,toggleCommentLike}
