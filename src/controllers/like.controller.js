@@ -65,3 +65,35 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
 })
 
 
+const toggleTweetLike = asyncHandler(async (req, res) => {
+    const {tweetId} = req.params
+    if(!tweetId){
+        throw new ApiError(400,"TweetId not found")
+    }
+    
+    if(!isValidObjectId(tweetId)){
+        throw new ApiError(400,"TweetId invalid")
+    }
+
+    const likedTweet = await Like.findOne(
+        {tweet : tweetId , likedBy : req.user?._id}
+    )
+    
+    if(likedTweet){
+        await Like.findByIdAndDelete(likedTweet?._id)
+    }else{
+        await Like.create({
+            tweet : tweetId,
+            likedBy : req.user?._id
+        })
+    }
+
+    return res.status(200)
+              .json(new ApiResponse(200,{likedTweet : !!likedTweet},"toggle successful"))
+})
+
+
+
+
+
+export {toggleVideoLike,toggleCommentLike,toggleTweetLike}
