@@ -15,7 +15,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
      if(!isValidObjectId(videoId)){
          throw new ApiError(400,"Invalid videoId")
      }
-
+    
     const likedVideo = await Like.findOne(
         {video : videoId , likedBy : req.user?._id}
     )
@@ -98,7 +98,8 @@ const getLikedVideos = asyncHandler(async (req, res) => {
     const likedVideo = await Like.aggregate([
         {
             $match : {
-                likedBy : req.user?._id
+                likedBy : new mongoose.Types.ObjectId(req.user?._id),
+                video : { $ne : null }
             }
         },
         {
@@ -118,10 +119,9 @@ const getLikedVideos = asyncHandler(async (req, res) => {
         },
         {
             $project : {
-                video : 1,
-                likedBy : 1,
+            
                 likedVideos : 1,
-                likeCount : 1
+        
             }
         }
     ])
