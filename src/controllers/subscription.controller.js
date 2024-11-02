@@ -47,45 +47,62 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
         throw new ApiError(400,"Invalid channelId")
     }
 
-    const subs = await Subscription.aggregate([
-        {
-            $match :{
-                channel : new mongoose.Types.ObjectId(channelId)
-            }
-        },
-        {
-            $lookup : {
-                from : "users",
-                localField : "channel",
-                foreignField : "_id",
-                as : "subscribers"
-            }
-        },
-        {
-            $addFields : {
-                subscribersCount : {
-                    $size : "$subscribers"
-                }
-            }
-        },
-        {
-            $project : {
-                subscribers : {
-                    username : 1,
-                    fullname : 1,
-                    _id : 1
+   try {
+     const subs = await Subscription.aggregate([
+         {
+             $match :{
+                 channel : new mongoose.Types.ObjectId(channelId)
+             }
+         },
+         {
+             $lookup : {
+                 from : "users",
+                 localField : "channel",
+                 foreignField : "_id",
+                 as : "subscribers"
+             }
+         },
+         {
+             $unwind : "$subscribers"
+         },
+         {
+            $group : {
+             _id : "$subscribers._id",
+             username : {$first : "$subscribers.username"},
+             fullname : {$first : "$subscribers.fullname"}
+            }  
+         },
+         {
+            $group: {
+                _id: null,
+                subscribers: {
+                    $push: {
+                        username: "$username",
+                        fullname: "$fullname"
+                    }
                 },
-                subscribersCount : 1,
+                subscribersCount: { $sum: 1 }
             }
-        }
-    ])
-
-    if(!subs?.length){
-        throw new ApiError(404,"User doesnot exist")
-    }
-
-    return res.status(200)
-              .json(new ApiResponse(200,subs,"User's subscribers fetched successfully"))
+        },
+         {
+             $project : {
+                 _id : 0,
+                 subscribers : 1,
+                 subscribersCount : 1
+             }
+         }
+        
+     ])
+ 
+     if(!subs?.length){
+         throw new ApiError(404,"User doesnot exist")
+     }
+ 
+     return res.status(200)
+               .json(new ApiResponse(200,subs,"User's subscribers fetched successfully"))
+   } catch (error) {
+     throw new ApiError(400,error?.message || "error while getting subs")
+   }
 })
 
 
