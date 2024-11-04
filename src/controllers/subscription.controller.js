@@ -85,6 +85,46 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 })
 
 
+const getSubscribedChannels = asyncHandler(async (req, res) => {
+    const { subscriberId } = req.params
+    
+    if(!subscriberId){
+        throw new ApiError(400,"subscriber's id not found")
+    }
+    if(!isValidObjectId(subscriberId)){
+        throw new ApiError(400,"Invalid id")
+    }
+
+    const subscribedTo = await Subscription.aggregate(
+       [
+        {
+            $match : {
+                subscriber : new mongoose.Types.ObjectId(subscriberId)
+            }
+        },
+        {
+            $group : {
+                _id : "$subscriber",
+                "ChannelsSubscribedTo" : {$addToSet : "$channel"} 
+            }
+        },
+        {
+            $project : {
+                "ChannelsSubscribedTo" : 1,
+                noOfChannelSubscribedTo : {
+                  $size : "$ChannelsSubscribedTo"
+                }
+            }
+        }
+       ] 
+    )
+
+    if(!subscribedTo){
+        throw new ApiError(400,"error while fetching")
+    }
+    return res.status(200)
+              .json(new ApiResponse(200,subscribedTo,"Channels subscribed to fetched successfully"))
+})
 
 
 
@@ -92,5 +132,4 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 
 
 
-
-export {toggleSubscription , getUserChannelSubscribers}
+export {toggleSubscription , getUserChannelSubscribers,getSubscribedChannels}
