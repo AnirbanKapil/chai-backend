@@ -48,51 +48,30 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     }
 
    try {
-     const subs = await Subscription.aggregate([
-         {
-             $match :{
-                 channel : new mongoose.Types.ObjectId(channelId)
-             }
-         },
-         {
-             $lookup : {
-                 from : "users",
-                 localField : "channel",
-                 foreignField : "_id",
-                 as : "subscribers"
-             }
-         },
-         {
-             $unwind : "$subscribers"
-         },
-         {
-            $group : {
-             _id : "$subscribers._id",
-             username : {$first : "$subscribers.username"},
-             fullname : {$first : "$subscribers.fullname"}
-            }  
-         },
-         {
-            $group: {
-                _id: null,
-                subscribers: {
-                    $push: {
-                        username: "$username",
-                        fullname: "$fullname"
-                    }
-                },
-                subscribersCount: { $sum: 1 }
+     const subs = await Subscription.aggregate(
+        [
+            {
+              '$match': {
+                'channel': new mongoose.Types.ObjectId(channelId)
+              }
+            }, {
+              '$group': {
+                '_id': '$channel', 
+                'subscribers': {
+                  '$addToSet': '$subscriber'
+                }
+              }
+            }, {
+              '$project': {
+                'channel': 1, 
+                'subscribers': 1, 
+                'subscriberCount': {
+                  '$size': '$subscribers'
+                }
+              }
             }
-        },
-         {
-             $project : {
-                 _id : 0,
-                 subscribers : 1,
-                 subscribersCount : 1
-             }
-         }
-        
-     ])
+          ]
+     )
  
      if(!subs?.length){
          throw new ApiError(404,"User doesnot exist")
