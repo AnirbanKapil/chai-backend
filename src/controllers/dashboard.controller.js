@@ -9,7 +9,45 @@ import {Video} from "../models/video.model.js"
 
 const getChannelStats = asyncHandler(async (req, res) => {
     // TODO: Get the channel stats like total video views, total subscribers, total videos, total likes etc.
+   
 })
 
 
-export {getChannelStats}
+
+const getChannelVideos = asyncHandler(async (req, res) => {
+    const owner = req.user?._id
+
+    const ownerVideos = await Video.aggregate(
+        [
+            {
+              '$match': {
+                'owner': new mongoose.Types.ObjectId(owner)
+              }
+            }, {
+              '$group': {
+                '_id': '$owner', 
+                'videos': {
+                  '$addToSet': '$videoFile'
+                }
+              }
+            }, {
+              '$project': {
+                _id : 0,
+                'owner': '$_id', 
+                'videos': 1, 
+                'NoOfVideos': {
+                  '$size': '$videos'
+                }
+              }
+            }
+          ]
+    )
+    if(!ownerVideos){
+        throw new ApiError(400,"Unable to find videos")
+    }
+
+    return res.status(200)
+              .json(new ApiResponse(200,ownerVideos,"Videos fetched successfully"))
+})
+
+export {getChannelStats,getChannelVideos}
