@@ -9,7 +9,68 @@ import {Video} from "../models/video.model.js"
 
 const getChannelStats = asyncHandler(async (req, res) => {
     // TODO: Get the channel stats like total video views, total subscribers, total videos, total likes etc.
-   
+    const getChannelStats = {}
+
+    const videoStats = await Video.aggregate(
+        [
+            {
+              '$match': {
+                'owner': req.user?._id
+              }
+            }, 
+            {
+              '$group': {
+                '_id': null, 
+                'totalViews': {
+                  '$sum': '$views'
+                }, 
+                'totalVideos': {
+                  '$count': {}
+                }
+              }
+            }
+          ]
+    )
+
+
+    const subscriberStats = await Subscription.aggregate(
+        [
+            {
+              $match : {
+                channel : req.user?._id
+              }  
+            },
+            {
+                $count : "TotalSubscribers"
+            }
+        ]
+    ) 
+    
+
+    const likeStats = await Like.aggregate(
+      [
+        {
+          $match : {
+            video : {$exists : true}
+          }
+        },
+        {
+          $group : {
+            _id : req.user?._id
+          }
+        },
+        {
+          $count : "TotalLikes"
+        }
+      ]
+    )
+
+    getChannelStats.totalViews = (videoStats && videoStats[0]?.totalViews) || 0
+    getChannelStats.totalVideos = (videoStats && videoStats[0]?.totalVideos) || 0
+    getChannelStats.totalSubs = (subscriberStats && subscriberStats[0]?.TotalSubscribers) || 0
+    getChannelStats.totalVideoLikes = (likeStats && likeStats[0]?.TotalLikes) || 0
+    return res.status(200)
+              .json(new ApiResponse(200,getChannelStats,"Channel stats fetched successfully"))
 })
 
 
